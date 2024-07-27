@@ -4,4 +4,4 @@ This is my portfolio where I will be implementing ML algorithms from scratch, un
 
 ## Projects
 - [Linear Regression]()
-- [Neural Networks](Neural%20Network/)
+- [Simple Neural Network](Neural%20Network/)
