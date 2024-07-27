@@ -37,7 +37,7 @@ The input layer directly takes the input data and passes it to the first hidden 
 ### Hidden Layers
 Each hidden layer consists of multiple neurons that apply a specified activation function, for the project we will be comparing the performance of the ReLU, Sigmoid and Hyperbolic Tangent activation functions.
 
-!['a'](/Images/Activation%20Functions.png "Activation Functions")
+![Activation Functions](Images/Activation%20Functions.png)
 
 ### Output Layer
 The output layer consists of a single neuron that provides the final output of the network, It will be using the linear activation function.
