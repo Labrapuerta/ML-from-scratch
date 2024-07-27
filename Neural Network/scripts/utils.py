@@ -4,7 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import wandb
 import plotly
+import csv
 
+
+### Callbacks
 class plot_training(tf.keras.callbacks.Callback):
     def __init__(self, save_images = False, epoch_interval = 1, wandb_ = False):
         super(plot_training, self).__init__()
@@ -58,8 +61,13 @@ class Wandb_plot(tf.keras.callbacks.Callback):
                         xname="x")})
         wandb.log({"Loss": logs.get('loss')})
         wandb.log({"Accuracy": logs.get('accuracy')})
-        
 
+class csv_logger(tf.keras.callbacks.Callback):
+    def __init__(self, path):
+        super(csv_logger, self).__init__()
+        self.path = path
+
+#### Custom Metric for training the model
 
 class custom_metric(tf.keras.metrics.Metric):
     def __init__(self, name='custom_metric'):
