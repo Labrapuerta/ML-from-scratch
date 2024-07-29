@@ -61,13 +61,13 @@ class Model(tf.keras.Model):
         sz = [n_in] + n_outs
         self.layerss =  [Layer(sz[i], sz[i+1], n_layer = i, activation = activation[i]) for i in range(len(n_outs))]
 
-    def compile(self, optimizer, metrics = {}):
+    def compile(self, optimizer, metrics = {}, y_mean = 0):
         super(Model, self).compile()
         self.optimizer = optimizer
         self._metrics = metrics
         for k,_ in self._metrics.items():
             setattr(self, k, 0)
-
+        self.y_mean = tf.convert_to_tensor(y_mean, dtype=tf.float32)
 
     def __repr__(self):
         return f'{[layer for layer in self.layerss]}'
@@ -83,8 +83,9 @@ class Model(tf.keras.Model):
         
         with tf.GradientTape() as tape:
             y_hat = self(x)
-            self.loss = tf.reduce_mean(tf.square(y - y_hat))
-            self.accuracy = tf.reduce_mean(tf.abs(y - y_hat))
+            self.loss = tf.reduce_sum(tf.square(y - y_hat))
+        TSS = tf.reduce_sum(tf.square(y - self.y_mean))
+        self.accuracy = 1 - (self.loss / TSS)
         
         ### Metrics
         for k,v in self._metrics.items():

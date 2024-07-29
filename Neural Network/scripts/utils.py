@@ -3,51 +3,17 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import wandb
-import plotly
 import csv
-
-
-### Callbacks
-class plot_training(tf.keras.callbacks.Callback):
-    def __init__(self, save_images = False, epoch_interval = 1, wandb_ = False):
-        super(plot_training, self).__init__()
-        if not os.path.exists('Images'):
-            os.makedirs('Images')
-        self.path = os.getcwd()
-        self.save_images = save_images
-        self.epoch_interval = epoch_interval
-        self.wandb_ = wandb_
-    def on_epoch_end(self, epoch, logs={}):
-        loss = logs.get('loss')
-        wandb.log({"loss": loss})
-        if epoch % self.epoch_interval == 0:
-            x = np.linspace(-2 * np.pi, 2 * np.pi, 100).reshape(-1, 1)
-            x = tf.convert_to_tensor(x, dtype=tf.float32)
-            y = np.sin(x)
-            y_hat = [self.model.predict(i)[0] for i in x]
-
-'''            plt.figure(figsize=(17,5))
-            plt.xlim(-2 * np.pi, 2 * np.pi)
-            plt.ylim(-1, 1)
-            plt.plot(x, y, label='True')
-            plt.plot(x, y_hat, label='Model')
-            plt.scatter(x, y_hat, color='red', s = 5)
-            plt.text(-6,-0.80,f'Loss: {loss:.4f}', fontsize=12)
-            for i in range(len(x)):
-                plt.plot([x[i], x[i]], [y[i], y_hat[i]], color='black', linestyle='--', alpha=0.3)
-            plt.legend()
-            plt.title(f'Epoch {epoch}')
-            if self.save_images:
-                plt.savefig(f'{self.path}/Images/epoch_{epoch}.png')
-            if self.wandb_:
-                wandb.log({"chart": plt})
-            plt.close()'''
-
+import pandas as pd
+import matplotlib.animation as animation
+import ast
+import networkx as nx
+from matplotlib.animation import FuncAnimation, PillowWriter 
 
 class Wandb_plot(tf.keras.callbacks.Callback):
     def __init__(self):
         super(Wandb_plot, self).__init__()
-    def on_epoch_end(self, epoch, logs={}):
+    def on_epoch_end(self, epoch, df={}):
         x = np.arange(-10, 10, 0.1)
         y = np.sin(x)
 
@@ -59,14 +25,28 @@ class Wandb_plot(tf.keras.callbacks.Callback):
                         keys=["Sin(x)", "Model(x)"],
                         title=f"Model Evolution {epoch}",
                         xname="x")})
-        wandb.log({"Loss": logs.get('loss')})
-        wandb.log({"Accuracy": logs.get('accuracy')})
+        wandb.log({"Loss": df.get('loss')})
+        wandb.log({"Accuracy": df.get('accuracy')})
+
 
 class csv_logger(tf.keras.callbacks.Callback):
-    def __init__(self, path):
-        super(csv_logger, self).__init__()
-        self.path = path
+    def __init__(self, path = 'logs', name = 'log.csv', **kwargs):
+        super(csv_logger, self).__init__(**kwargs)
+        self.path = f'{os.getcwd()}/{path}'
+        self.name = name
+        if os.path.isfile(f'{self.path}/{self.name}'):
+            os.remove(f'{self.path}/{self.name}')
+        self.x  = np.arange(-10, 10, 0.1)
 
+    def on_epoch_end(self, epoch, df={}):
+        with open(f'{self.path}/{self.name}', mode='a') as file:
+            writer = csv.writer(file)
+            if epoch == 0:
+                writer.writerow(['Epoch', 'Accuracy', 'Loss', 'Prediction'])
+            y_hat = [self.model.predict(i).item() for i in self.x]
+            writer.writerow([epoch, df.get('accuracy'), df.get('loss'), y_hat])
+
+        file.close()
 #### Custom Metric for training the model
 
 class custom_metric(tf.keras.metrics.Metric):
@@ -85,3 +65,55 @@ class custom_metric(tf.keras.metrics.Metric):
     def reset_state(self): 
         self.custom_metric.assign(0.0)
         self.count.assign(0.0)
+
+
+def animate_function(logs, name = 'training_animation.gif'):
+    df = pd.read_csv(logs)
+    df.Prediction = df.Prediction.apply(lambda x: ast.literal_eval(x))
+    x = np.arange(-10, 10, 0.1)
+    y = np.sin(x)
+    # Prepare the figure and axis
+    fig, ax = plt.subplots(figsize=(17, 5))
+    line, = ax.plot([], [], label='Model', lw=2, color='red')
+    true_line, = ax.plot([], [], label='Sin(x)', lw=2, color='blue')
+    text = ax.text(-6, -0.8, '', fontsize=12)
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    vertical_lines = []
+    title = ax.text(0.5, 1.05, 'Epoch', transform=ax.transAxes, ha="center", fontsize=16)
+    ax.legend(loc='upper right')
+
+    # Set initial values
+    def init():
+        ax.set_xlim(-2 * np.pi, 2 * np.pi)
+        ax.set_ylim(-1, 1)
+        true_line.set_data(x, y)
+        return line, true_line, text
+
+    # Update the plot for each frame
+    def update(frame):
+        epoch_data = df.iloc[frame]
+        epoch = epoch_data['Epoch']
+        loss = epoch_data['Loss']
+        y_hat = epoch_data['Prediction']
+        
+        line.set_data(x, y_hat)
+        text.set_text(f'Loss: {loss:.4f}')
+        title.set_text(f'Epoch {epoch}')
+
+        # Remove old vertical lines
+        for vline in vertical_lines:
+            vline.remove()
+        vertical_lines.clear()
+        
+        # Add new vertical lines
+        for i in range(len(x)):
+            vline = ax.plot([x[i], x[i]], [y[i], y_hat[i]], color='black', linestyle='--', alpha=0.3)
+            vertical_lines.append(vline[0])
+        
+        return line, true_line, text, *vertical_lines
+
+    # Create the animation
+    ani = animation.FuncAnimation(fig, update, frames=len(df), init_func=init, blit=True)
+    ani.save(f'Images/{name}', writer='imagemagick')
+    plt.close()
