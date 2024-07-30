@@ -33,11 +33,99 @@ Model: Represents the complete neural network model.
 The network architecture consists of an input layer, hidden layers, and an output layer. Each layer contains neurons that apply weights, biases, and activation functions to the input data.
 For this project, I choose to use a neural network with the following dense layers: [1, 512, 512, 512, 1], this architecture will be used for all the activation functions. The choosen optimizer is the Adam with a learning rate of 0.001.
 
+```mermaid
+---
+title: Neural Network Architecture
+---
+graph LR
+    subgraph InputLayer
+        direction TB
+        A1((Neuron 1))
+    end
+    
+    subgraph HiddenLayer1
+        direction TB
+        B1((Neuron 1))
+        B2((Neuron 2))
+        B3((Neuron 3))
+        ellipsis1[...]
+    end
+
+    subgraph HiddenLayer2
+        direction TB
+        C1((Neuron 1))
+        C2((Neuron 2))
+        C3((Neuron 3))
+        ellipsis2[...]
+    end
+
+    subgraph HiddenLayer3
+        direction TB
+        D1((Neuron 1))
+        D2((Neuron 2))
+        D3((Neuron 3))
+        ellipsis3[...]
+    end
+
+    subgraph OutputLayer
+        direction TB
+        E1((Neuron 1))
+    end
+
+    A1 --> B1
+    A1 --> B2
+    A1 --> B3
+    B1 --> C1 & C2 & C3
+    B2 --> C1 & C2 & C3
+    B3 --> C1 & C2 & C3
+    C1 --> D1 & D2 & D3
+    C2 --> D1 & D2 & D3
+    C3 --> D1 & D2 & D3
+    D1 --> E1
+    D2 --> E1
+    D3 --> E1
+```
+
 ### Input Layer
 The input layer directly takes the input data and passes it to the first hidden layer. Unlike other layers, the input layer does not apply any activation function, weights, or biases.
 
 #### Why I distributed like this?
 Because the input layer is just a placeholder for the input data, besides, this ensures that each input for the network will have it's own weight and bias when passed to the first hidden layer. Instead of having a single weight and bias for all the inputs.
+
+```mermaid
+graph TB
+    subgraph Simple input layer
+        direction LR
+        I1((Neuron 1))
+        I2((Neuron 2))
+        I3((Neuron 3))
+        X[[Inputs]]
+        W[["Weight"]]
+        X & W --> I1
+        X & W--> I2
+        X & W--> I3
+        
+    end
+    
+    subgraph Distributed input layer
+        direction LR
+        I4((Neuron 1))
+        I5((Neuron 2))
+        I6((Neuron 3))
+        X0[["Input[0]"]]
+        X1[["Input[1]"]]
+        X2[["Input[2]"]]
+        W0[["Weight[0]"]]
+        W1[["Weight[1]"]]
+        W2[["Weight[2]"]]
+
+        X0 & W0 --> I4
+        X1 & W1 --> I5
+        X2 & W2 --> I6
+    end
+
+
+```
 
 ### Hidden Layers
 Each hidden layer consists of multiple neurons that apply a specified activation function, for the project we will be comparing the performance of the ReLU, Sigmoid and Hyperbolic Tangent activation functions.
