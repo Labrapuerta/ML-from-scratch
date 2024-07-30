@@ -33,7 +33,7 @@ class Neuron(tf.Module):
             if self.activation:
                 self.out =  self.activation(z)
             self.out = z
-            return self.out
+            return self.out[0]
         
         return self.x
     
@@ -68,7 +68,7 @@ class Model(tf.keras.Model):
         for k,_ in self._metrics.items():
             setattr(self, k, 0)
         self.y_mean = tf.convert_to_tensor(y_mean, dtype=tf.float32)
-
+    
     def __repr__(self):
         return f'{[layer for layer in self.layerss]}'
 

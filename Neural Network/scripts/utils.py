@@ -10,6 +10,7 @@ import ast
 import networkx as nx
 from matplotlib.animation import FuncAnimation, PillowWriter 
 
+
 class Wandb_plot(tf.keras.callbacks.Callback):
     def __init__(self):
         super(Wandb_plot, self).__init__()
