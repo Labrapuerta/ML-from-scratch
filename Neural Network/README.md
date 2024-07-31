@@ -6,11 +6,17 @@ This project implements a neural network from scratch to approximate the sine fu
 
 ## Table of Contents
 - [Overview](#overview)
-- [Implementation Details](#implementation-details)
 - [Mathematics Behind Neurons](#mathematics-behind-neurons)
+- [Implementation Details](#implementation-details)
+    - [Network Architecture](#network-architecture)
+        - [Input Layer](#input-layer)
+        - [Hidden Layers](#hidden-layers)
+        - [Output Layer](#output-layer)
+    - [Loss Function](#loss-function)
+    - [Accuracy Function](#accuracy-function)
+- [Training the Network](#training-the-network)
 - [Results](#results)
 - [Usage](#usage)
-- [Jupyter Notebook](#jupyter-notebook)
 - [References](#references)
 
 ## Overview
@@ -22,6 +28,8 @@ This project contains the following files:
 - `scripts/`: A folder containing the python scripts for the project.
 - `logs/`: A folder containing the logs of the training process and predictions at each epoch. 
 
+## Mathematics Behind Neurons
+
 ## Implementation Details
 The neural network is implemented using the following classes:
 
@@ -29,7 +37,7 @@ Neuron: Represents a single neuron in the network.
 Layer: Represents a layer consisting of multiple neurons.
 Model: Represents the complete neural network model.
 
-## Network Architecture
+### Network Architecture
 The network architecture consists of an input layer, hidden layers, and an output layer. Each layer contains neurons that apply weights, biases, and activation functions to the input data.
 For this project, I choose to use a neural network with the following dense layers: [1, 512, 512, 512, 1], this architecture will be used for all the activation functions. The choosen optimizer is the Adam with a learning rate of 0.001.
 
@@ -86,11 +94,11 @@ graph LR
     D3 --> E1
 ```
 
-### Input Layer
+#### Input Layer
 The input layer directly takes the input data and passes it to the first hidden layer. Unlike other layers, the input layer does not apply any activation function, weights, or biases.
 
-#### Why I distributed like this?
-Because the input layer is just a placeholder for the input data, besides, this ensures that each input for the network will have it's own weight and bias when passed to the first hidden layer. Instead of having a single weight and bias for all the inputs.
+##### Why I distributed like this?
+Because the input layer is just a placeholder for the input data, besides, this ensures that each input for the network will have it's own weight and bias when passed to the first hidden layer. Instead of having a single weight and bias for all the inputs. In the case the input dimensions $= 1$ this is not necessary, but it's a good practice to have it like this.
 
 ```mermaid
 graph TB
@@ -127,13 +135,18 @@ graph TB
 
 ```
 
-### Hidden Layers
+#### Hidden Layers
 Each hidden layer consists of multiple neurons that apply a specified activation function, for the project we will be comparing the performance of the ReLU, Sigmoid and Hyperbolic Tangent activation functions.
 
 ![Activation Functions](Images/Activation%20Functions.png)
 
-### Output Layer
+#### Output Layer
 The output layer consists of a single neuron that provides the final output of the network, It will be using the linear activation function.
+
+### Loss Function
+
+
+### Accuracy Function
 
 ## Training the Network
 ![Training_example](Images/test1.gif)
