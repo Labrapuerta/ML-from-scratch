@@ -144,6 +144,9 @@ Each hidden layer consists of multiple neurons that apply a specified activation
 The output layer consists of a single neuron that provides the final output of the network, It will be using the linear activation function.
 
 ### Loss Function
+The loss function used for this project is the Mean Squared Error (MSE) loss function, which calculates the average of the squared differences between the predicted and actual values.
+
+
 
 
 ### Accuracy Function

@@ -12,23 +12,24 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 
 
 class Wandb_plot(tf.keras.callbacks.Callback):
-    def __init__(self):
+    def __init__(self, epoch_plot = 0):
         super(Wandb_plot, self).__init__()
-    def on_epoch_end(self, epoch, df={}):
-        x = np.arange(-10, 10, 0.1)
-        y = np.sin(x)
+        self.epoch_plot = epoch_plot
+    def on_epoch_end(self, epoch, logs={}):
+        if epoch % self.epoch_plot == 0:
+            x = np.arange(-10, 10, 0.1)
+            y = np.sin(x)
 
-        y_hat = [self.model.predict(i)[0] for i in x]
+            y_hat = [self.model.predict(i)[0] for i in x]
 
-        wandb.log({"Model evolution" : wandb.plot.line_series(
-                        xs = x.flatten(),
-                        ys = [y.flatten(), np.array(y_hat).flatten()],
-                        keys=["Sin(x)", "Model(x)"],
-                        title=f"Model Evolution {epoch}",
-                        xname="x")})
-        wandb.log({"Loss": df.get('loss')})
-        wandb.log({"Accuracy": df.get('accuracy')})
-
+            wandb.log({"Model evolution" : wandb.plot.line_series(
+                            xs = x.flatten(),
+                            ys = [y.flatten(), np.array(y_hat).flatten()],
+                            keys=["Sin(x)", "Model(x)"],
+                            title=f"Model Evolution {epoch}",
+                            xname="x")})
+        wandb.log({"Loss": logs.get('loss')})
+        wandb.log({"Accuracy": logs.get('accuracy')})
 
 class csv_logger(tf.keras.callbacks.Callback):
     def __init__(self, path = 'logs', name = 'log.csv', **kwargs):
@@ -39,13 +40,13 @@ class csv_logger(tf.keras.callbacks.Callback):
             os.remove(f'{self.path}/{self.name}')
         self.x  = np.arange(-10, 10, 0.1)
 
-    def on_epoch_end(self, epoch, df={}):
+    def on_epoch_end(self, epoch, logs={}):
         with open(f'{self.path}/{self.name}', mode='a') as file:
             writer = csv.writer(file)
             if epoch == 0:
                 writer.writerow(['Epoch', 'Accuracy', 'Loss', 'Prediction'])
             y_hat = [self.model.predict(i).item() for i in self.x]
-            writer.writerow([epoch, df.get('accuracy'), df.get('loss'), y_hat])
+            writer.writerow([epoch, logs.get('accuracy'), logs.get('loss'), y_hat])
 
         file.close()
 #### Custom Metric for training the model
