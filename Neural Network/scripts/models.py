@@ -33,7 +33,7 @@ class Neuron(tf.Module):
             if self.activation:
                 self.out =  self.activation(z)
             self.out = z
-            return self.out[0]
+            return self.out
         
         return self.x
     
