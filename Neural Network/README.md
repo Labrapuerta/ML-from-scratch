@@ -159,8 +159,8 @@ Why I choose this loss function? Because it's a simple loss function that can be
 ### Accuracy Function
 I choose to use the $R^2$ statistic as the accuracy function, the
 $R^2$ statistic provides an alternative measure of fit. It takes the form of *proportion*- the proportion of variance explained - and so it always takes on a value between 0 and 1, and is independent of the scale of $Y$
-To calculate $R^2$, we use the formula 
-$$ R^2 = \frac{\text{TSS} - \text{RSS}}{\text{TSS}} = 1 - \frac{\text{RSS}}{\text{TSS}}$$
+To calculate $R^2$, we use the formula    
+$$R^2 = \frac{\text{TSS} - \text{RSS}}{\text{TSS}} = 1 - \frac{\text{RSS}}{\text{TSS}}$$
 where $\text{TSS} = \sum_{i=1}^{n}(y_i - \hat{y})^2$ is the *total sum of squares*. *TSS* measures the total variance in the response $Y$, and can be thought of as the amount of variability inherent in the response before the regression is performed.
 
 Why I choose this accuracy function? Because it's a good metric to use when the output is a continuous variable, besides, it's a good metric to use when comparing the performance of the network with different activation functions.
