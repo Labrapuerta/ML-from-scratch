@@ -1,5 +1,6 @@
 # Neural Network to Approximate the Sine Function
 *Disclaimer, still under developement, but the clases are already implemented and the network is working, the only thing missing is the training loop and the results.*
+*Since 31-July Im having a bug when training on colab or kaggle, when defining the model it's not creating the training variables but if you use the layers they are working propperly*
 
 ## Introduction
 This project implements a neural network from scratch to approximate the sine function. Unlike typical neural network implementations, this project does not use pre-built neural network functions from libraries like TensorFlow or PyTorch. Because the purpose of the project is building a neural network from scratch, the implementation includes the forward and backward propagation steps, as well as the training loop and the loss functions, the only built-in functions used are the tf matrix operations, activation functions and optimizers.
@@ -29,6 +30,7 @@ This project contains the following files:
 - `logs/`: A folder containing the logs of the training process and predictions at each epoch. 
 
 ## Mathematics Behind Neurons
+I created a Jupyter notebook that explains the mathematics behind the neural network implementation, including the forward and backward propagation steps. You can access the notebook by clicking [here](NN_explanation.ipynb) I recommend reading this notebook before diving into the code because I explain the classes and functions in detail.
 
 ## Implementation Details
 The neural network is implemented using the following classes:
@@ -144,20 +146,31 @@ Each hidden layer consists of multiple neurons that apply a specified activation
 The output layer consists of a single neuron that provides the final output of the network, It will be using the linear activation function.
 
 ### Loss Function
-The loss function used for this project is the Mean Squared Error (MSE) loss function, which calculates the average of the squared differences between the predicted and actual values.
+The loss function used for this project is the Residual Sum of Squares (RSS) loss function,The least squares approach chooses $\beta_0$ and $\beta_1$ to minimize the RSS. The RSS is a measure of the discrepancy between the data and the model's predicted values. The formula for the RSS is given by:
 
+$$\text{RSS} = (y_1 - \hat \beta_0 - \hat \beta_1 x_1)^2 + (y_2 - \hat \beta_0 - \hat \beta_1 x_2)^2 + ... + (y_n - \hat \beta_0 - \hat \beta_1 x_n)^2$$
 
+Or
 
+$$RSS = \sum_{i=1}^{n} (y_i - f(x_i))^2$$
+
+Why I choose this loss function? Because it's a simple loss function that can be used to compare the performance of the network with different activation functions, besides, it's a good loss function to use when the output is a continuous variable. (also to implement it from scratch is easier)
 
 ### Accuracy Function
+I choose to use the $R^2$ statistic as the accuracy function, the
+$R^2$ statistic provides an alternative measure of fit. It takes the form of *proportion*- the proportion of variance explained - and so it always takes on a value between 0 and 1, and is independent of the scale of $Y$
+To calculate $R^2$, we use the formula 
+$$ R^2 = \frac{\text{TSS} - \text{RSS}}{\text{TSS}} = 1 - \frac{\text{RSS}}{\text{TSS}}$$
+where $\text{TSS} = \sum_{i=1}^{n}(y_i - \hat{y})^2$ is the *total sum of squares*. *TSS* measures the total variance in the response $Y$, and can be thought of as the amount of variability inherent in the response before the regression is performed.
+
+Why I choose this accuracy function? Because it's a good metric to use when the output is a continuous variable, besides, it's a good metric to use when comparing the performance of the network with different activation functions.
 
 ## Training the Network
 ![Training_example](Images/test1.gif)
 
 ## Results
 The following images show the network's approximation of the sine function with the different activation functions compared to a baseline tf model.
-You can see the comparison between the models on Wandb by clicking [here](https://wandb.ai/a01700257/Neural%20Network%20from%20scratch/table)
-
+You can see the comparison between the models on Wandb by clicking [here](https://wandb.ai/a01700257/Neural%20Network%20from%20scratch/table)  **(Note: The link will be available after the training is done)**
 
 ### ReLU Activation Function
 
