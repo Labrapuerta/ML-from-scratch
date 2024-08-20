@@ -6,7 +6,7 @@ This is my portfolio where I will be implementing ML algorithms from scratch, un
 I divided the projects in folders, each folder contains a `README.md` file with a brief explanation of the project and the code, and a `Jupyter Notebook` with the explanation of the math behind the algorithm.
 
 Here is a list of the projects:
-- [Linear Regression](Linear%20Regression/)
-- [Simple Neural Network](Neural%20Network/)  
+- [Linear Regression](Machine%20Learning/Linear%20Regression/)
+- [Simple Neural Network](Deep%20Learning/Neural%20Network/)  
 
 
