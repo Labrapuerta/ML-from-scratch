@@ -1,7 +1,7 @@
 # Multiple Linear Regression for Predicting House Prices?
 
 ## Introduction
-![Training_example](Images/training_animation.gif)
+![Training_example](images/training_animation.gif)
 ## Table of Contents
 - [Overview](#overview)
 - [Mathemathics behind Linear Regression](#mathemathics-behind-linear-regression)
