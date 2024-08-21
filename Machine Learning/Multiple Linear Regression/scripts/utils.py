@@ -2,14 +2,11 @@ import os
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-import wandb
 import csv
 import pandas as pd
 import matplotlib.animation as animation
-import ast
 import networkx as nx
 from matplotlib.animation import FuncAnimation, PillowWriter 
-
 
 class csv_logger(tf.keras.callbacks.Callback):
     def __init__(self, path = 'logs', name = 'log.csv', **kwargs):
@@ -25,7 +22,7 @@ class csv_logger(tf.keras.callbacks.Callback):
             writer = csv.writer(file)
             if epoch == 0:
                 writer.writerow(['Epoch', 'Accuracy', 'Loss','Beta0', 'Beta1'])
-            writer.writerow([epoch, logs.get('Accuracy'), logs.get('Loss'), self.model.coeff.w[0].numpy()[0], self.model.coeff.w[1].numpy()[0], ])
+            writer.writerow([epoch, logs.get('Accuracy'), logs.get('Loss'), self.model.coeff.w[0].numpy()[0], self.model.coeff.w[1].numpy()[0]])
         file.close()
 
 class custom_metric(tf.keras.metrics.Metric):

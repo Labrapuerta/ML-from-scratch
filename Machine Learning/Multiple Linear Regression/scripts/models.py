@@ -13,11 +13,11 @@ class Coefficients(tf.Module):
 
     def __call__(self, x):
         x = tf.convert_to_tensor(x, dtype=tf.float32)
-        x = tf.concat([tf.ones_like(x, dtype= tf.float32),x], axis = -1)
+        x = tf.concat([tf.ones([x.shape[0],1], dtype= tf.float32),x], axis = -1)
         if self.n_dim + 1 != x.shape[-1]:
             raise ValueError(f'Expected input dimension: {self.n_dim}, got: {x.shape[-1] - 1}')
         return x @ self.w
-       
+    
 ##### Model #####
 class LinearRegression(tf.keras.Model):
     def __init__(self, n_dim):
@@ -35,16 +35,30 @@ class LinearRegression(tf.keras.Model):
         for k,_ in self._metrics.items():
             setattr(self, k, 0)
     
+    #### Loss function
+    def _RSS(self, y, y_hat):
+        return tf.reduce_sum(tf.square(y - y_hat), axis = 0)[0]
+    
+    def _TSS(self, y_hat):
+        return tf.reduce_sum(tf.square(y_hat - self.y_mean), axis = 0)[0]
+    
+    #### Accuracy metric
+    def _Rsquared(self, RSS, TSS):
+        return 1 - (RSS / TSS)
+    
     def train_step(self, data):
         x, y = data 
         y = tf.convert_to_tensor(y, dtype=tf.float32)
+
         ### Forward pass
         with tf.GradientTape() as tape:
             y_hat = self(x)
-            self.loss = tf.reduce_sum(tf.square(y - y_hat), axis = 0)[0]
-        TSS = tf.reduce_sum(tf.square(y - self.y_mean), axis = 0)[0]
-        self.accuracy = 1 - (self.loss / TSS)
-        
+            self.loss = self._RSS(y, y_hat)
+            print(self.loss)
+
+        ### Metrics
+        self.accuracy = self._Rsquared(self.loss, self._TSS(y_hat))
+
         ### Metrics
         for k,v in self._metrics.items():
             value = getattr(self, k)
@@ -59,12 +73,10 @@ class LinearRegression(tf.keras.Model):
             print(f"Error applying gradients: {e}")
             
         return {"Loss": self._metrics['loss'].result(), 'Accuracy': self._metrics['accuracy'].result()}
-
-
+    
     def predict(self, x):
         x = tf.convert_to_tensor(x, dtype=tf.float32)
         return self(x) + self._metrics['loss'].result()
-    
         
     @property
     def metrics(self):
