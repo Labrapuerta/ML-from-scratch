@@ -11,30 +11,29 @@ class Neuron(tf.Module):
         self.activation = activation
         with tf.name_scope(f"layer_{self.n_layer+1}") as scope:
             if self.n_layer == 0:
-                self.w = 0
-                self.b = 0
+                self.w = tf.ones([n_dim,1], dtype=tf.float32)
+                self.b = tf.zeros([1,1], dtype=tf.float32)
             else:
-                self.w = tf.Variable(w_initializer(shape=[n_dim], dtype=tf.float32), trainable=True, name = f'weights_{n_neuron+1}', import_scope=scope)
-                self.b = tf.Variable(b_initializer(shape=[1], dtype=tf.float32), trainable=True, name = f'bias_{n_neuron+1}', import_scope=scope)
+                self.w = tf.Variable(w_initializer(shape=[n_dim,1], dtype=tf.float32), trainable=True, name = f'weights_{n_neuron+1}', import_scope=scope)
+                self.b = tf.Variable(b_initializer(shape=[1,1], dtype=tf.float32), trainable=True, name = f'bias_{n_neuron+1}', import_scope=scope)
     
     def __repr__(self):
-        return f'w: {self.w.numpy().item()},x: {self.x.numpy().item()},b: {self.b.numpy().item()}, out: {self.out.numpy().item()}'
+        return f'w: {self.w.numpy().item()},b: {self.b.numpy().item()}'
 
     def __call__(self, x):
+        self.x = tf.convert_to_tensor(x, dtype=tf.float32)
+        self.shape = self.x.shape
         if self.n_layer == 0 and self.n_dim != 1:
-            if self.n_dim != len(x):
-                raise ValueError(f'Input dimension {len(x)} does not match neuron dimension {self.n_dim}') 
-            self.x = tf.convert_to_tensor(x[self.neuron_index], dtype=tf.float32)
-        elif self.n_layer == 0 and self.n_dim == 1:
-            self.x = tf.convert_to_tensor(x, dtype=tf.float32)
+            if self.n_dim !=  self.x.shape[-1]:
+                raise ValueError(f'Input dimension {self.x.shape[0]} does not match neuron dimension {self.n_dim}') 
+            self.x = self.x[:,self.neuron_index]
+            self.x = tf.reshape(self.x, [self.shape[0],1])
         else:
             self.x = tf.convert_to_tensor(x, dtype=tf.float32)
-            z = tf.reduce_sum(tf.math.multiply(self.x, self.w)) + self.b
+            z = self.x @ self.w + self.b
             if self.activation:
                 self.out =  self.activation(z)
-            self.out = z
-            return self.out
-        
+            return z
         return self.x
     
     def parameters(self):
@@ -47,17 +46,19 @@ class Layer(tf.Module):
         self.n_neurons = n_out
         self.n_layer = n_layer
         self.activation = activation
-        self.neurons = [Neuron(n_in, n_layer, i, activation) for i in range(n_out)]
+        self.neurons = [Neuron(n_in, n_layer, i , activation) for i in range(n_out)]
 
     def __repr__(self):
         return f'layer : {self.name}, neurons: {self.n_neurons}'
 
     def __call__(self, x):
-        return tf.stack([neuron(x) for neuron in self.neurons], axis=-1)
-
+        z =  tf.stack([neuron(x) for neuron in self.neurons], axis= -1)
+        return tf.reshape(z, [z.shape[0], z.shape[-1]])
+    
 class Model(tf.keras.Model):
     def __init__(self, n_in, n_outs:list, activation:list):
         super().__init__(name='model')
+        self.inputs = n_in
         sz = [n_in] + n_outs
         self.layerss =  [Layer(sz[i], sz[i+1], n_layer = i, activation = activation[i]) for i in range(len(n_outs))]
 
@@ -76,35 +77,52 @@ class Model(tf.keras.Model):
         for layer in self.layerss:
             x = layer(x)
         return x
+
+        #### Loss function
+    def _RSS(self, y, y_hat):
+        return tf.reduce_sum(tf.square(y - y_hat), axis = 0)[0]
+    
+    def _TSS(self, y_hat):
+        return tf.reduce_sum(tf.square(y_hat - self.y_mean), axis = 0)[0]
+    
+    #### Accuracy metric
+    def _Rsquared(self, RSS, TSS):
+        return 1 - (RSS / TSS)
         
-    def train_step(self,data):
+    def train_step(self, data):
         x, y = data
+        x = tf.convert_to_tensor(x, dtype=tf.float32)
+        x = tf.reshape(x, [x.shape[0], self.inputs])  # Corrected assignment here
         y = tf.convert_to_tensor(y, dtype=tf.float32)
-        
+        y = tf.reshape(y, [y.shape[0], 1])
+
         with tf.GradientTape() as tape:
             y_hat = self(x)
-            self.loss = tf.reduce_sum(tf.square(y - y_hat))
-        TSS = tf.reduce_sum(tf.square(y - self.y_mean))
-        self.accuracy = 1 - (self.loss / TSS)
+            self.loss = self._RSS(y, y_hat)
+
+        self.accuracy = self._Rsquared(self.loss, self._TSS(y_hat))
         
-        ### Metrics
-        for k,v in self._metrics.items():
+        # Update metrics
+        for k, v in self._metrics.items():
             value = getattr(self, k)
             v.update_state(value)
-                                     
-        ### Backward pass
-        model_gradient = tape.gradient(self.loss, self.trainable_variables)
 
+        # Backward pass
+        model_gradient = tape.gradient(self.loss, self.trainable_variables)
+        
         try:
             self.optimizer.apply_gradients(zip(model_gradient, self.trainable_variables))
         except Exception as e:
             print(f"Error applying gradients: {e}")
-        return {"loss": self._metrics['loss'].result(), 'accuracy': self._metrics['accuracy'].result()}
+
+        return {"loss": self._metrics['loss'].result(), "accuracy": self._metrics['accuracy'].result()}
+
 
     def predict(self, x):
         x = tf.convert_to_tensor(x, dtype=tf.float32)
+        x = tf.reshape(x, [x.shape[0], self.inputs])  # Corrected assignment here
         y_hat = self(x)
-        return y_hat.numpy()
+        return y_hat
         
     @property
     def metrics(self):

@@ -20,7 +20,7 @@ class Wandb_plot(tf.keras.callbacks.Callback):
             x = np.arange(-10, 10, 0.1)
             y = np.sin(x)
 
-            y_hat = [self.model.predict(i)[0] for i in x]
+            y_hat = self.model.predict(x).numpy()
 
             wandb.log({"Model evolution" : wandb.plot.line_series(
                             xs = x.flatten(),
@@ -45,9 +45,8 @@ class csv_logger(tf.keras.callbacks.Callback):
             writer = csv.writer(file)
             if epoch == 0:
                 writer.writerow(['Epoch', 'Accuracy', 'Loss', 'Prediction'])
-            y_hat = [self.model.predict(i).item() for i in self.x]
+            y_hat = self.model.predict(self.x).numpy()
             writer.writerow([epoch, logs.get('accuracy'), logs.get('loss'), y_hat])
-
         file.close()
 #### Custom Metric for training the model
 
