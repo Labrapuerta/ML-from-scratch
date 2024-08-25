@@ -4,7 +4,7 @@ from scripts.models import Model
 import csv
 import matplotlib.pyplot as plt
 import wandb
-from scripts.utils import custom_metric, Wandb_plot, csv_logger, animate_function
+from scripts.utils import custom_metric, Wandb_plot, csv_logger, animate_function, early_stopping
 import pandas as pd
 import matplotlib.animation as animation
 import ast
@@ -32,10 +32,15 @@ run = wandb.init(
 )
 config = wandb.config
 
-
 x_train = np.arange(-10, 10, 0.01)
 y_train = np.sin(x_train)
 y_mean = np.mean(y_train)
+
+x_train = tf.convert_to_tensor(x_train, dtype=tf.float32)
+x_train = tf.reshape(x_train, (-1,1))
+y_train = tf.convert_to_tensor(y_train, dtype=tf.float32)
+y_train = tf.reshape(y_train, (-1,1))
+
 
 loss_metric = custom_metric(name = "loss")
 accuracy_metric = custom_metric(name = "accuracy")
@@ -46,9 +51,10 @@ optimizer = tf.keras.optimizers.legacy.Adam(learning_rate= 0.01)
 m.compile(optimizer, metrics, y_mean)
 
 w_callback = Wandb_plot()
-logs = csv_logger(name = "test1.csv")
+logs = csv_logger(name = "tanh.csv")
+early_stop = early_stopping()
 wandb.config.update({"model": m})
 
-m.fit(x_train, y_train, epochs = 1500, batch_size = 128, callbacks = [w_callback, logs])
+m.fit(x_train, y_train, epochs = 1500, batch_size = 128, callbacks = [w_callback, logs,])
 run.finish()
 

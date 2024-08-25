@@ -12,7 +12,7 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 
 
 class Wandb_plot(tf.keras.callbacks.Callback):
-    def __init__(self, epoch_plot = 0):
+    def __init__(self, epoch_plot = 1):
         super(Wandb_plot, self).__init__()
         self.epoch_plot = epoch_plot
     def on_epoch_end(self, epoch, logs={}):
@@ -24,7 +24,7 @@ class Wandb_plot(tf.keras.callbacks.Callback):
 
             wandb.log({"Model evolution" : wandb.plot.line_series(
                             xs = x.flatten(),
-                            ys = [y.flatten(), np.array(y_hat).flatten()],
+                            ys = [y.flatten(), y_hat.flatten()],
                             keys=["Sin(x)", "Model(x)"],
                             title=f"Model Evolution {epoch}",
                             xname="x")})
@@ -45,11 +45,31 @@ class csv_logger(tf.keras.callbacks.Callback):
             writer = csv.writer(file)
             if epoch == 0:
                 writer.writerow(['Epoch', 'Accuracy', 'Loss', 'Prediction'])
-            y_hat = self.model.predict(self.x).numpy()
-            writer.writerow([epoch, logs.get('accuracy'), logs.get('loss'), y_hat])
+            y_hat = self.model.predict(self.x).numpy().flatten()
+            writer.writerow([epoch, logs.get('accuracy'), logs.get('loss'), y_hat.tolist()])
         file.close()
-#### Custom Metric for training the model
 
+class early_stopping(tf.keras.callbacks.Callback):
+    def __init__(self, patience = 50, **kwargs):
+        super(early_stopping, self).__init__(**kwargs)
+        self.patience = patience
+        self.wait = 0
+        self.best = np.inf
+        self.best_epoch = 0
+
+    def on_epoch_end(self, epoch, logs={}):
+        if logs.get('loss') < self.best:
+            self.best = logs.get('loss')
+            self.best_epoch = epoch
+            self.wait = 0
+        else:
+            self.wait += 1
+            if self.wait >= self.patience:
+                self.model.stop_training = True
+                print(f'Early stopping at epoch {self.best_epoch} with loss {self.best}')
+                
+
+#### Custom Metric for training the model
 class custom_metric(tf.keras.metrics.Metric):
     def __init__(self, name='custom_metric'):
         super(custom_metric, self).__init__(name= name)
@@ -96,10 +116,11 @@ def animate_function(logs, name = 'training_animation.gif'):
         epoch_data = df.iloc[frame]
         epoch = epoch_data['Epoch']
         loss = epoch_data['Loss']
+        accuracy = epoch_data['Accuracy']
         y_hat = epoch_data['Prediction']
         
         line.set_data(x, y_hat)
-        text.set_text(f'Loss: {loss:.4f}')
+        text.set_text(f'Loss: {loss:.4f} \nAccuracy: {accuracy:.4f}')
         title.set_text(f'Epoch {epoch}')
 
         # Remove old vertical lines
