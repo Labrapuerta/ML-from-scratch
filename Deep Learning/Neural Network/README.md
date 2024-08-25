@@ -1,6 +1,5 @@
 # Neural Network to Approximate the Sine Function
-*Disclaimer, still under developement, but the clases are already implemented and the network is working, the only thing missing is the training loop and the results.*
-*Since 31-July Im having a bug when training on colab or kaggle, when defining the model it's not creating the training variables but if you use the layers they are working propperly*
+*Found the bug, the problem is the tf.version im using to develope the model. tf 2.15 on arm architecture works fine when using legacy.Adam, in other tf versions there are some issues with calculating the gradient. Later I will try to fix it but currently this works so its fine* :rocket:
 
 ## Introduction
 This project implements a neural network from scratch to approximate the sine function. Unlike typical neural network implementations, this project does not use pre-built neural network functions from libraries like TensorFlow or PyTorch. Because the purpose of the project is building a neural network from scratch, the implementation includes the forward and backward propagation steps, as well as the training loop and the loss functions, the only built-in functions used are the tf matrix operations, activation functions and optimizers.

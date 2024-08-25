@@ -10,12 +10,8 @@ class Neuron(tf.Module):
         self.n_dim = n_dim
         self.activation = activation
         with tf.name_scope(f"layer_{self.n_layer+1}") as scope:
-            if self.n_layer == 0:
-                self.w = tf.ones([n_dim,1], dtype=tf.float32)
-                self.b = tf.zeros([1,1], dtype=tf.float32)
-            else:
-                self.w = tf.Variable(w_initializer(shape=[n_dim,1], dtype=tf.float32), trainable=True, name = f'weights_{n_neuron+1}', import_scope=scope)
-                self.b = tf.Variable(b_initializer(shape=[1,1], dtype=tf.float32), trainable=True, name = f'bias_{n_neuron+1}', import_scope=scope)
+            self.w = tf.Variable(w_initializer(shape=[n_dim,1], dtype=tf.float32), trainable=True, name = f'weights_{n_neuron+1}', import_scope=scope)
+            self.b = tf.Variable(b_initializer(shape=[1,1], dtype=tf.float32), trainable=True, name = f'bias_{n_neuron+1}', import_scope=scope)
     
     def __repr__(self):
         return f'w: {self.w.numpy().item()},b: {self.b.numpy().item()}'
@@ -28,13 +24,10 @@ class Neuron(tf.Module):
                 raise ValueError(f'Input dimension {self.x.shape[0]} does not match neuron dimension {self.n_dim}') 
             self.x = self.x[:,self.neuron_index]
             self.x = tf.reshape(self.x, [self.shape[0],1])
-        else:
-            self.x = tf.convert_to_tensor(x, dtype=tf.float32)
-            z = self.x @ self.w + self.b
-            if self.activation:
-                self.out =  self.activation(z)
-            return z
-        return self.x
+        z = self.x @ self.w + self.b
+        if self.activation:
+            self.out =  self.activation(z)
+        return z
     
     def parameters(self):
         return [self.b, self.w]
