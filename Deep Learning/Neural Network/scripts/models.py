@@ -1,22 +1,27 @@
 import tensorflow as tf
 
-class Neuron(tf.Module):
-    def __init__(self, n_dim, n_layer, n_neuron, activation):
+class Neuron(tf.keras.layers.Layer):
+    def __init__(self,n_dims, n_layer, n_neuron, activation):
         super().__init__(name=f'neuron_{n_neuron}')
-        w_initializer = tf.keras.initializers.RandomUniform(minval=-1, maxval=1)
-        b_initializer = tf.keras.initializers.RandomUniform(minval=-1, maxval=1)
+        self.w_initializer = tf.keras.initializers.RandomUniform(minval=-1, maxval=1)
+        self.b_initializer = tf.keras.initializers.RandomUniform(minval=-1, maxval=1)
         self.n_layer = n_layer
+        self.n_dim = n_dims
         self.neuron_index = n_neuron
-        self.n_dim = n_dim
         self.activation = activation
-        with tf.name_scope(f"layer_{self.n_layer+1}") as scope:
-            self.w = tf.Variable(w_initializer(shape=[n_dim,1], dtype=tf.float32), trainable=True, name = f'weights_{n_neuron+1}', import_scope=scope)
-            self.b = tf.Variable(b_initializer(shape=[1,1], dtype=tf.float32), trainable=True, name = f'bias_{n_neuron+1}', import_scope=scope)
+    
+    def build(self, input_shape):
+        if self.n_layer == 0 and self.n_dim != 1:
+            self.w = self.add_weight(shape=[1,1], initializer=self.w_initializer, trainable=True, name = f'layer_{self.n_layer}_weight_{self.neuron_index+1}')
+            self.b = self.add_weight(shape=[1,1], initializer=self.b_initializer, trainable=True, name = f'bias_{self.neuron_index+1}')
+        else:
+            self.w = self.add_weight(shape=[input_shape[-1],1], initializer=self.w_initializer, trainable=True, name = f'layer_{self.n_layer}_weight_{self.neuron_index+1}')
+            self.b = self.add_weight(shape=[1,1], initializer=self.b_initializer, trainable=True, name = f'bias_{self.neuron_index+1}')
     
     def __repr__(self):
         return f'w: {self.w.numpy().item()},b: {self.b.numpy().item()}'
 
-    def __call__(self, x):
+    def call(self, x):
         self.x = tf.convert_to_tensor(x, dtype=tf.float32)
         self.shape = self.x.shape
         if self.n_layer == 0 and self.n_dim != 1:
@@ -32,7 +37,7 @@ class Neuron(tf.Module):
     def parameters(self):
         return [self.b, self.w]
        
-class Layer(tf.Module):
+class Layer(tf.keras.layers.Layer):
     def __init__(self, n_in, n_out, n_layer, activation = tf.tanh):
         super().__init__(name= f'layer_{n_layer}')
         self.n_inputs = n_in
@@ -44,7 +49,7 @@ class Layer(tf.Module):
     def __repr__(self):
         return f'layer : {self.name}, neurons: {self.n_neurons}'
 
-    def __call__(self, x):
+    def call(self, x):
         z =  tf.stack([neuron(x) for neuron in self.neurons], axis= -1)
         return tf.reshape(z, [z.shape[0], z.shape[-1]])
     
