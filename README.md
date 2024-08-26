@@ -23,8 +23,7 @@ I continuously update this repository with new projects, so feel free to star it
 ### 1. Machine Learning
 
 - **[Multiple Linear Regression](Machine%20Learning/Multiple%20Linear%20Regression/)**  
-A deep dive into linear regression with multiple predictors using Tensorflow. The project covers data preprocessing, model creation, maths, and evaluation.
-
+Multiple linear regression from scratch to predict gene expression levels based on various genomic features
 - **K-Nearest Neighbors (KNN)**  
 Implementation of the KNN algorithm with a focus on understanding the distance metrics and how they impact model performance.
 
