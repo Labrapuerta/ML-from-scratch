@@ -1,39 +1,35 @@
 import tensorflow as tf
 
 ##### Building Blocks #####
-class Coefficients(tf.Module):
-    def __init__(self, n_dim):
+class Coefficients(tf.keras.layers.Layer):
+    def __init__(self):
         super().__init__(name=f'Coefficients')
-        w_initializer = tf.keras.initializers.RandomUniform(minval=-1, maxval=1)
-        self.n_dim = n_dim
-        self.w = tf.Variable(w_initializer(shape=[n_dim + 1,1], dtype=tf.float32), trainable=True)
+        self.w_initializer = tf.keras.initializers.RandomUniform(minval=-1, maxval=1)
        
-    def __repr__(self):
-        return f'Values: {self.w.numpy()}'
+    def build(self, input_shape):
+        self.w = self.add_weight(name='w', shape=[input_shape[-1] + 1, 1], initializer=self.w_initializer, trainable=True)
 
-    def __call__(self, x):
+    def call(self, x):
         x = tf.convert_to_tensor(x, dtype=tf.float32)
-        x = tf.concat([tf.ones([x.shape[0],1], dtype= tf.float32),x], axis = -1)
-        if self.n_dim + 1 != x.shape[-1]:
-            raise ValueError(f'Expected input dimension: {self.n_dim}, got: {x.shape[-1] - 1}')
+        x = tf.concat([tf.ones([x.shape[0],1], dtype= tf.float32),x], axis = -1)        
         return x @ self.w
     
+    def __repr__(self):
+        return f'Values: {self.w.numpy()}'
+    
 ##### Model #####
-class LinearRegression(tf.keras.Model):
-    def __init__(self, n_dim):
+class MultipleLinearRegression(tf.keras.Model):
+    def __init__(self):
         super().__init__(name='LinearRegression')
-        self.coeff = Coefficients(n_dim)
+        self.coeff = Coefficients()
         
     def __call__(self, x):
         return self.coeff(x)
     
-    def compile(self, optimizer, y_mean = 0, metrics = {}):
-        super(LinearRegression, self).compile()
+    def compile(self, optimizer, y_mean = 0):
+        super(MultipleLinearRegression, self).compile()
         self.optimizer = optimizer
         self.y_mean = tf.convert_to_tensor(y_mean, dtype=tf.float32)
-        self._metrics = metrics
-        for k,_ in self._metrics.items():
-            setattr(self, k, 0)
     
     #### Loss function
     def _RSS(self, y, y_hat):
@@ -54,16 +50,11 @@ class LinearRegression(tf.keras.Model):
         with tf.GradientTape() as tape:
             y_hat = self(x)
             self.loss = self._RSS(y, y_hat)
-            print(self.loss)
 
         ### Metrics
-        self.accuracy = self._Rsquared(self.loss, self._TSS(y_hat))
-
-        ### Metrics
-        for k,v in self._metrics.items():
-            value = getattr(self, k)
-            v.update_state(value)
-
+        TSS = self._TSS(y_hat)
+        self.accuracy = self._Rsquared(self.loss, TSS)
+        
         ### Backward pass
         model_gradient = tape.gradient(self.loss, self.trainable_variables)
 
@@ -72,12 +63,4 @@ class LinearRegression(tf.keras.Model):
         except Exception as e:
             print(f"Error applying gradients: {e}")
             
-        return {"Loss": self._metrics['loss'].result(), 'Accuracy': self._metrics['accuracy'].result()}
-    
-    def predict(self, x):
-        x = tf.convert_to_tensor(x, dtype=tf.float32)
-        return self(x) + self._metrics['loss'].result()
-        
-    @property
-    def metrics(self):
-        return [v for _,v in self._metrics.items()]
+        return {"Loss": self.loss, 'Accuracy': self.accuracy}
