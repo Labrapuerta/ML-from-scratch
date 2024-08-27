@@ -1,8 +1,10 @@
 # Gene Expression Levels Using Multiple Linear Regression :dna:
 This project involves implementing multiple linear regression from scratch using tensorflow (no build in functions, only tensors and automatic diferentiation), to predict gene expression levels based on various genomic features. The goal is to create a model that can accurately estimate the expression levels of genes given a set of predictors derived from DNA sequences, such as GC content, promoter strength, and the presence of specific motifs.
-## Introduction
-![Training_example](images/training_animation.gif)
+
+If you only want to see the code, you can find it [here](MLR_explanation.ipynb).
+
 ## Table of Contents
+- [Introduction](#introduction)
 - [Overview](#overview)
 - [Mathemathics behind Linear Regression](#mathemathics-behind-linear-regression)
 - [Implementation Details](#implementation-details)
@@ -15,6 +17,8 @@ This project involves implementing multiple linear regression from scratch using
 - [Usage](#usage)
 - [References](#references)
 
+## Introduction
+![Training_example](images/training_animation.gif)
 
 ## Overview
 
