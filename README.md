@@ -30,7 +30,7 @@ Implementation of the KNN algorithm with a focus on understanding the distance m
 ### 2. Deep Learning
 - **[Simple Neural Network](Deep%20Learning/Neural%20Network/)**  
 Building a neural network from scratch using Tensorflow and training it to approximate te Sine function. The project covers forward propagation, backpropagation, and optimization techniques.
-- **[Transformer from Scratch](Deep%20Learning/Transformer/)**
+- **[Transformer :robot:](Deep%20Learning/Transformer/)**
 A detailed guide on building a Transformer model from scratch using Tensorflow to predict enriched RNA secondary structure, the project includes all building blocks from transformer and it's explanations, also the trained model for making predictions.
 
 ### 3. Bioinformatics
