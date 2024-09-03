@@ -5,4 +5,6 @@ This project involves implementing the Transformer architecture from scratch usi
 
 
 ## Resources
+- Vaswani, A., Brain, G., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A., Kaiser, Ł., & Polosukhin, I. (n.d.). Attention Is All You Need. https://user.phil.hhu.de/~cwurm/wp-content/uploads/2020/01/7181-attention-is-all-you-need.pdf
 - Umar Jamil. (2023, May 28). Attention is all you need (Transformer) - Model explanation (including math), Inference and Training [Video]. YouTube. https://www.youtube.com/watch?v=bCz4OMemCcA
+- CS25: Tranformers United! (2024). Stanford CS25. https://web.stanford.edu/class/cs25/index.html#course
